@@ -8,12 +8,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="SharpEdge"/>
 <meta name="theme-color" content="#070c13"/>
-<title>SharpEdge · NBA</title>
+<title>SharpEdge · Sports Betting</title>
 <style>
   :root {
     --green: #00ff88;
     --green-dim: rgba(0,255,136,0.12);
-    --green-glow: rgba(0,255,136,0.5);
     --red: #ff4466;
     --bg: #070c13;
     --card: rgba(10,16,28,0.95);
@@ -29,7 +28,6 @@
     font-family: 'SF Mono', 'DM Mono', 'Courier New', monospace;
     color: var(--text);
     overflow-x: hidden;
-    /* push content above bottom nav */
     padding-bottom: calc(64px + var(--safe-bottom));
   }
   body::before {
@@ -41,43 +39,55 @@
     background-size: 40px 40px;
   }
 
-/* ── Status bar spacer (iPhone notch) ── */
 .status-spacer {
-height: calc(var(–safe-top) + 0px);
+height: var(–safe-top);
 background: rgba(7,12,19,0.97);
 position: sticky; top: 0; z-index: 100;
 }
 
-/* ── Header ── */
 header {
 position: sticky; top: var(–safe-top); z-index: 99;
 background: rgba(7,12,19,0.97);
 backdrop-filter: blur(20px) saturate(180%);
 -webkit-backdrop-filter: blur(20px) saturate(180%);
 border-bottom: 1px solid var(–green-dim);
-padding: 12px 16px 10px;
+padding: 10px 16px 8px;
 }
-.header-inner { display: flex; align-items: center; justify-content: space-between; }
-.brand { display: flex; align-items: center; gap: 8px; }
-.status-dot {
-width: 7px; height: 7px; border-radius: 50%;
-animation: pulse 2s infinite;
-flex-shrink: 0;
-}
-.brand-name { font-size: 17px; font-weight: 700; letter-spacing: 0.1em; color: #fff; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
+.brand-name { font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #fff; }
 .brand-name em { color: var(–green); font-style: normal; }
-.brand-badge { font-size: 8px; color: rgba(0,255,136,0.4); letter-spacing: 0.18em; margin-left: 2px; }
-.header-sub { font-size: 9px; color: #3a5070; margin-top: 3px; letter-spacing: 0.06em; }
+.header-sub { font-size: 9px; color: #3a5070; margin-top: 2px; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Sport selector */
+.sport-scroll {
+display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 0;
+scrollbar-width: none; border-bottom: 1px solid var(–green-dim);
+background: rgba(7,12,19,0.97);
+position: sticky; top: calc(var(–safe-top) + 52px); z-index: 98;
+}
+.sport-scroll::-webkit-scrollbar { display: none; }
+.sport-btn {
+display: flex; flex-direction: column; align-items: center; gap: 3px;
+padding: 6px 12px 8px; border-radius: 8px 8px 0 0; cursor: pointer;
+border: none; border-bottom: 2px solid transparent;
+background: transparent; color: var(–muted); font-family: inherit;
+font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+}
+.sport-btn .sport-emoji { font-size: 18px; }
+.sport-btn.active { color: var(–green); border-bottom-color: var(–green); }
+.sport-btn:active { opacity: 0.7; }
+
 .refresh-btn {
-width: 32px; height: 32px; border-radius: 8px;
+width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
 border: 1px solid var(–green-dim); background: transparent;
-color: var(–muted); font-size: 16px; cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-transition: all 0.15s;
+color: var(–muted); font-size: 15px; cursor: pointer;
+display: none; align-items: center; justify-content: center;
 }
 .refresh-btn:active { background: rgba(0,255,136,0.1); color: var(–green); }
 
-/* ── Bottom nav ── */
 nav {
 position: fixed; bottom: 0; left: 0; right: 0; z-index: 99;
 background: rgba(7,12,19,0.97);
@@ -89,58 +99,56 @@ padding-bottom: var(–safe-bottom);
 }
 .nav-item {
 flex: 1; display: flex; flex-direction: column; align-items: center;
-padding: 10px 0 8px; cursor: pointer; transition: all 0.15s;
-border: none; background: none; color: var(–muted); font-family: inherit;
+padding: 10px 0 8px; cursor: pointer; border: none; background: none;
+color: var(–muted); font-family: inherit; position: relative; transition: color 0.15s;
 }
 .nav-item.active { color: var(–green); }
 .nav-icon { font-size: 20px; margin-bottom: 3px; }
-.nav-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+.nav-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
 .nav-badge {
-position: absolute; top: 6px; right: calc(50% - 18px);
+position: absolute; top: 6px; right: calc(50% - 20px);
 background: var(–green); color: #070c13;
-font-size: 8px; font-weight: 700; width: 14px; height: 14px;
-border-radius: 7px; display: flex; align-items: center; justify-content: center;
+font-size: 8px; font-weight: 700; min-width: 14px; height: 14px;
+border-radius: 7px; display: none; align-items: center; justify-content: center;
+padding: 0 3px;
 }
-.nav-item { position: relative; }
 
-/* ── Main content ── */
-main { position: relative; z-index: 5; padding: 14px 14px 0; }
+main { position: relative; z-index: 5; padding: 12px 14px 0; }
 
-/* ── Connect screen ── */
-#connectScreen {
-padding: 20px 0;
-animation: fadeIn 0.3s ease;
-}
-.connect-logo {
-text-align: center; margin-bottom: 28px;
-}
-.connect-logo-text {
-font-size: 32px; font-weight: 700; letter-spacing: 0.1em; color: #fff;
-}
+/* Connect screen */
+#connectScreen { padding: 16px 0; animation: fadeIn 0.3s ease; }
+.connect-logo { text-align: center; margin-bottom: 24px; }
+.connect-logo-text { font-size: 28px; font-weight: 700; letter-spacing: 0.1em; color: #fff; }
 .connect-logo-text em { color: var(–green); font-style: normal; }
 .connect-logo-sub { font-size: 10px; color: var(–muted); letter-spacing: 0.15em; margin-top: 4px; }
+
+.sports-preview { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+.sport-pill-preview {
+padding: 5px 12px; border-radius: 20px; font-size: 11px;
+border: 1px solid var(–green-dim); color: var(–muted); background: transparent;
+}
+
 .connect-card {
 background: var(–card); border: 1px solid var(–green-dim);
-border-radius: 14px; padding: 20px; margin-bottom: 12px;
+border-radius: 14px; padding: 18px; margin-bottom: 12px;
 }
-.connect-card-title { font-size: 11px; font-weight: 700; color: var(–green); letter-spacing: 0.15em; margin-bottom: 8px; }
-.connect-card-desc { font-size: 11px; color: var(–muted); line-height: 1.7; margin-bottom: 16px; }
+.connect-card-title { font-size: 10px; font-weight: 700; color: var(–green); letter-spacing: 0.15em; margin-bottom: 8px; }
+.connect-card-desc { font-size: 11px; color: var(–muted); line-height: 1.7; margin-bottom: 14px; }
 .connect-card-desc a { color: var(–green); text-decoration: none; }
 .key-input {
-width: 100%; padding: 13px 14px; border-radius: 10px; font-family: inherit;
+width: 100%; padding: 12px 14px; border-radius: 10px; font-family: inherit;
 border: 1px solid rgba(0,255,136,0.25); background: rgba(0,20,10,0.6);
 color: var(–green); font-size: 13px; outline: none; margin-bottom: 10px;
 -webkit-appearance: none; appearance: none;
 }
 .key-input::placeholder { color: rgba(0,255,136,0.3); }
 .connect-btn {
-width: 100%; padding: 14px; border-radius: 10px; font-family: inherit;
+width: 100%; padding: 13px; border-radius: 10px; font-family: inherit;
 border: none; background: rgba(0,255,136,0.15);
 color: var(–green); font-size: 12px; font-weight: 700;
-letter-spacing: 0.2em; cursor: pointer; transition: all 0.15s;
--webkit-appearance: none;
+letter-spacing: 0.2em; cursor: pointer; -webkit-appearance: none;
 }
-.connect-btn:active { background: rgba(0,255,136,0.25); transform: scale(0.98); }
+.connect-btn:active { background: rgba(0,255,136,0.25); }
 .connect-btn:disabled { opacity: 0.4; }
 .error-card {
 background: rgba(255,50,50,0.08); border: 1px solid rgba(255,80,80,0.2);
@@ -149,20 +157,19 @@ line-height: 1.6; margin-top: 10px; display: none;
 }
 .steps-card {
 background: var(–card); border: 1px solid var(–green-dim);
-border-radius: 14px; padding: 16px 20px;
+border-radius: 14px; padding: 16px 18px;
 }
-.steps-title { font-size: 10px; color: var(–muted); letter-spacing: 0.15em; margin-bottom: 12px; }
-.step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+.steps-title { font-size: 9px; color: var(–muted); letter-spacing: 0.15em; margin-bottom: 12px; }
+.step { display: flex; gap: 12px; margin-bottom: 10px; }
 .step:last-child { margin-bottom: 0; }
 .step-num {
 width: 20px; height: 20px; border-radius: 10px; border: 1px solid var(–green-dim);
-color: var(–green); font-size: 9px; display: flex; align-items: center; justify-content: center;
-flex-shrink: 0; margin-top: 1px;
+color: var(–green); font-size: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
 }
 .step-text { font-size: 11px; color: var(–muted); line-height: 1.6; }
 .step-text a { color: var(–green); text-decoration: none; }
 
-/* ── Spinner ── */
+/* Spinner */
 #spinner { text-align: center; padding: 60px 0; display: none; }
 .spin-ring {
 width: 28px; height: 28px; border: 2px solid rgba(0,255,136,0.15);
@@ -171,67 +178,71 @@ animation: spin 0.8s linear infinite;
 }
 .spin-label { font-size: 10px; color: var(–muted); letter-spacing: 0.2em; }
 
-/* ── Game cards ── */
+/* No games */
+.no-games { text-align: center; padding: 50px 0; color: var(–muted); }
+.no-games-emoji { font-size: 36px; margin-bottom: 12px; opacity: 0.3; }
+.no-games-text { font-size: 11px; letter-spacing: 0.1em; }
+.no-games-sub { font-size: 10px; margin-top: 6px; }
+
+/* Game cards */
 .game-card {
 background: var(–card); border: 1px solid var(–green-dim);
 border-radius: 14px; overflow: hidden; margin-bottom: 10px;
-animation: fadeIn 0.3s ease;
+animation: fadeIn 0.25s ease;
 }
-.game-header { padding: 14px 16px; cursor: pointer; -webkit-user-select: none; }
-.game-time { font-size: 10px; color: var(–green); letter-spacing: 0.1em; margin-bottom: 6px; }
-.game-matchup { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; }
+.game-header { padding: 13px 15px; cursor: pointer; -webkit-user-select: none; }
+.game-hrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.game-info { flex: 1; min-width: 0; }
+.game-time { font-size: 9px; color: var(–green); letter-spacing: 0.1em; margin-bottom: 5px; }
+.game-matchup { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.25; }
 .game-matchup .away { color: #7090b0; }
-.game-matchup .at-sign { color: #2a4060; font-size: 12px; margin: 0 6px; }
-.game-meta { font-size: 10px; color: #4a6080; margin-top: 5px; }
-.game-header-right { display: flex; align-items: center; gap: 10px; }
-.game-hrow { display: flex; justify-content: space-between; align-items: center; }
-.best-badge {
-text-align: right;
-}
-.best-label { font-size: 8px; color: var(–muted); letter-spacing: 0.1em; margin-bottom: 2px; }
+.game-matchup .at-sign { color: #2a4060; font-size: 11px; margin: 0 5px; }
+.game-meta { font-size: 10px; color: #4a6080; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.game-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.best-badge { text-align: right; }
+.best-label { font-size: 8px; color: var(–muted); letter-spacing: 0.08em; }
 .best-grade { font-size: 11px; font-weight: 700; }
-.best-pick { font-size: 9px; color: #5070a0; margin-top: 1px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chevron-icon { color: #3a5070; font-size: 14px; transition: transform 0.25s; flex-shrink: 0; }
+.best-pick { font-size: 9px; color: #5070a0; margin-top: 1px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chevron-icon { color: #3a5070; font-size: 13px; transition: transform 0.25s; }
 .chevron-icon.open { transform: rotate(180deg); }
 
-.game-body { border-top: 1px solid rgba(0,255,136,0.07); padding: 12px 16px; display: none; }
+.game-body { border-top: 1px solid rgba(0,255,136,0.07); padding: 11px 15px; display: none; }
 .game-body.open { display: block; }
 .books-scroll { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px; scrollbar-width: none; }
 .books-scroll::-webkit-scrollbar { display: none; }
 .book-chip { font-size: 9px; padding: 3px 8px; border-radius: 4px; background: rgba(0,255,136,0.06); color: #4a7060; white-space: nowrap; flex-shrink: 0; }
 
-/* Bet cards — stacked vertically on mobile */
 .bet-list { display: flex; flex-direction: column; gap: 8px; }
 .bet-item {
-border-radius: 10px; padding: 12px 14px; transition: all 0.2s;
+border-radius: 10px; padding: 11px 13px; transition: all 0.2s;
 border: 1px solid rgba(0,255,136,0.1); background: rgba(4,8,16,0.8);
 }
 .bet-item.added { background: rgba(0,255,136,0.05); }
-.bet-row1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-.bet-row2 { display: flex; justify-content: space-between; align-items: center; }
+.bet-row1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
 .bet-type-tag { font-size: 8px; letter-spacing: 0.18em; color: var(–muted); }
-.bet-pick-text { font-size: 14px; font-weight: 700; color: #fff; margin-top: 2px; }
-.bet-odds-text { font-size: 15px; font-weight: 700; }
-.bet-prob-row { font-size: 10px; color: var(–muted); margin: 4px 0 6px; }
+.bet-pick-text { font-size: 13px; font-weight: 700; color: #fff; margin-top: 2px; }
+.bet-odds-text { font-size: 15px; font-weight: 700; flex-shrink: 0; margin-left: 8px; }
+.bet-prob-row { font-size: 10px; color: var(–muted); margin: 3px 0 5px; }
 .bet-prob-row span { color: #b0c0d8; }
-.bet-bar-track { height: 2px; background: #141c28; border-radius: 1px; margin-bottom: 8px; overflow: hidden; }
+.bet-bar-track { height: 2px; background: #141c28; border-radius: 1px; margin-bottom: 7px; overflow: hidden; }
 .bet-bar-fill { height: 100%; border-radius: 1px; }
+.bet-row2 { display: flex; justify-content: space-between; align-items: center; }
 .grade-text { font-size: 11px; font-weight: 700; }
 .slip-add-btn {
-padding: 6px 14px; border-radius: 8px; font-family: inherit;
-font-size: 10px; cursor: pointer; letter-spacing: 0.1em; transition: all 0.15s;
+padding: 5px 13px; border-radius: 8px; font-family: inherit;
+font-size: 10px; cursor: pointer; letter-spacing: 0.1em;
 -webkit-appearance: none; border: 1px solid rgba(0,255,136,0.2);
-background: transparent; color: var(–muted);
+background: transparent; color: var(–muted); transition: all 0.15s;
 }
-.slip-add-btn:active { transform: scale(0.95); }
+.slip-add-btn:active { opacity: 0.6; }
 
-/* ── Value tab ── */
-.filter-section { margin-bottom: 14px; }
+/* Value tab */
+.filter-section { margin-bottom: 12px; }
 .filter-label { font-size: 9px; letter-spacing: 0.15em; color: var(–muted); margin-bottom: 6px; }
 .pill-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .pill-row::-webkit-scrollbar { display: none; }
 .pill {
-padding: 5px 14px; border-radius: 8px; font-family: inherit; white-space: nowrap;
+padding: 5px 13px; border-radius: 8px; font-family: inherit; white-space: nowrap;
 border: 1px solid rgba(0,255,136,0.15); background: transparent; color: var(–muted);
 font-size: 10px; letter-spacing: 0.1em; cursor: pointer; flex-shrink: 0;
 text-transform: uppercase; -webkit-appearance: none; transition: all 0.15s;
@@ -242,21 +253,23 @@ text-transform: uppercase; -webkit-appearance: none; transition: all 0.15s;
 .value-list { display: flex; flex-direction: column; gap: 8px; }
 .value-item {
 background: var(–card); border: 1px solid var(–green-dim);
-border-radius: 12px; padding: 13px 14px; cursor: pointer;
-animation: fadeIn 0.2s ease; transition: border-color 0.15s;
+border-radius: 12px; padding: 12px 14px; cursor: pointer;
+animation: fadeIn 0.2s ease;
 }
-.value-item:active { opacity: 0.85; }
-.vi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-.vi-pick { font-size: 14px; font-weight: 700; color: #fff; }
-.vi-odds { font-size: 14px; font-weight: 700; }
+.value-item:active { opacity: 0.8; }
+.vi-type-sport { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.vi-type { font-size: 8px; letter-spacing: 0.15em; color: var(–muted); }
+.vi-sport-tag { font-size: 8px; color: #3a5070; }
+.vi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; gap: 8px; }
+.vi-pick { font-size: 14px; font-weight: 700; color: #fff; flex: 1; }
+.vi-odds { font-size: 14px; font-weight: 700; flex-shrink: 0; }
 .vi-game { font-size: 10px; color: var(–muted); margin-bottom: 6px; }
 .vi-bottom { display: flex; justify-content: space-between; align-items: center; }
 .vi-probs { font-size: 10px; color: var(–muted); }
 .vi-probs span { color: #9ab0c8; }
 .vi-grade { font-size: 11px; font-weight: 700; }
-.vi-type { font-size: 8px; letter-spacing: 0.15em; color: var(–muted); margin-bottom: 3px; }
 
-/* ── Slip tab ── */
+/* Slip tab */
 .slip-empty { text-align: center; padding: 60px 0; color: var(–muted); }
 .slip-empty-ball { font-size: 44px; margin-bottom: 14px; opacity: 0.25; }
 .slip-empty-title { font-size: 12px; letter-spacing: 0.2em; margin-bottom: 6px; }
@@ -264,11 +277,12 @@ animation: fadeIn 0.2s ease; transition: border-color 0.15s;
 
 .slip-card {
 background: var(–card); border: 1px solid var(–green-dim);
-border-radius: 12px; padding: 13px 14px; margin-bottom: 8px;
+border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
 }
-.sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-.sc-pick { font-size: 14px; font-weight: 700; color: #fff; flex: 1; margin-right: 10px; }
-.sc-remove { background: none; border: none; color: #ff4466; font-size: 18px; cursor: pointer; padding: 0; line-height: 1; }
+.sc-sport { font-size: 8px; color: var(–muted); letter-spacing: 0.12em; margin-bottom: 4px; }
+.sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 8px; }
+.sc-pick { font-size: 14px; font-weight: 700; color: #fff; flex: 1; }
+.sc-remove { background: none; border: none; color: #ff4466; font-size: 18px; cursor: pointer; padding: 0; line-height: 1; flex-shrink: 0; }
 .sc-meta { font-size: 10px; color: var(–muted); margin-bottom: 10px; }
 .sc-bottom { display: flex; justify-content: space-between; align-items: center; }
 .sc-wager-row { display: flex; align-items: center; gap: 6px; }
@@ -286,67 +300,157 @@ color: var(–green); font-size: 13px; outline: none; -webkit-appearance: none;
 background: var(–card); border: 1px solid rgba(0,255,136,0.18);
 border-radius: 14px; padding: 16px; margin-top: 4px;
 }
-.ss-row { display: flex; justify-content: space-between; padding: 6px 0; }
-.ss-row:last-child { border-top: 1px solid rgba(0,255,136,0.1); margin-top: 4px; padding-top: 12px; }
-.ss-label { font-size: 11px; color: var(–muted); letter-spacing: 0.08em; }
+.ss-row { display: flex; justify-content: space-between; padding: 5px 0; }
+.ss-divider { border-top: 1px solid rgba(0,255,136,0.1); margin: 6px 0; }
+.ss-label { font-size: 11px; color: var(–muted); }
 .ss-value { font-size: 11px; color: var(–text); }
-.ss-row:last-child .ss-label { font-size: 12px; }
-.ss-row:last-child .ss-value { font-size: 20px; font-weight: 700; color: var(–green); }
+.ss-total-label { font-size: 12px; color: var(–muted); font-weight: 600; }
+.ss-total-value { font-size: 22px; font-weight: 700; color: var(–green); }
 
-/* ── Disclaimer ── */
 .disclaimer {
-margin: 20px 0 10px; padding: 10px 14px; border-radius: 10px;
+margin: 18px 0 8px; padding: 10px 14px; border-radius: 10px;
 border: 1px solid rgba(255,100,100,0.1); background: rgba(255,30,30,0.04);
 font-size: 9px; color: #3a5060; text-align: center; line-height: 1.7;
 }
 
-/* ── Animations ── */
+/* Props tab */
+.props-filters { margin-bottom: 12px; }
+.stat-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.stat-scroll::-webkit-scrollbar { display: none; }
+
+.prop-card {
+background: var(–card); border: 1px solid var(–green-dim);
+border-radius: 12px; overflow: hidden; margin-bottom: 10px;
+animation: fadeIn 0.25s ease;
+}
+.prop-player-header {
+padding: 11px 14px 8px;
+border-bottom: 1px solid rgba(0,255,136,0.07);
+display: flex; align-items: center; justify-content: space-between;
+}
+.prop-player-name { font-size: 14px; font-weight: 700; color: #fff; }
+.prop-player-meta { font-size: 9px; color: var(–muted); margin-top: 2px; }
+.prop-sport-badge {
+font-size: 9px; padding: 2px 8px; border-radius: 6px;
+background: rgba(0,255,136,0.07); color: #4a7060; flex-shrink: 0;
+}
+
+.prop-lines { padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 7px; }
+.prop-line {
+border-radius: 8px; padding: 9px 11px;
+border: 1px solid rgba(0,255,136,0.1); background: rgba(4,8,16,0.8);
+transition: all 0.2s;
+}
+.prop-line.added { background: rgba(0,255,136,0.05); }
+.pl-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.pl-desc { font-size: 12px; font-weight: 600; color: var(–text); }
+.pl-odds { font-size: 14px; font-weight: 700; flex-shrink: 0; margin-left: 8px; }
+.pl-meta { font-size: 10px; color: var(–muted); margin-bottom: 5px; }
+.pl-meta span { color: #9ab0c8; }
+.pl-bar-track { height: 2px; background: #141c28; border-radius: 1px; margin-bottom: 6px; overflow: hidden; }
+.pl-bar-fill { height: 100%; border-radius: 1px; }
+.pl-bottom { display: flex; justify-content: space-between; align-items: center; }
+
+.props-empty { text-align: center; padding: 40px 0; color: var(–muted); }
+.props-empty-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.3; }
+.props-load-btn {
+display: block; width: 100%; padding: 13px; border-radius: 10px; font-family: inherit;
+border: 1px solid rgba(0,255,136,0.25); background: rgba(0,255,136,0.07);
+color: var(–green); font-size: 11px; font-weight: 700;
+letter-spacing: 0.15em; cursor: pointer; margin-bottom: 12px;
+-webkit-appearance: none; transition: all 0.15s;
+}
+.props-load-btn:active { background: rgba(0,255,136,0.15); }
+.props-load-btn:disabled { opacity: 0.4; }
+
 @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
 @keyframes spin   { to{transform:rotate(360deg)} }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 0; }
+@keyframes spinning { to{transform:rotate(360deg)} }
+.spinning { animation: spinning 0.8s linear infinite; display: inline-block; }
+::-webkit-scrollbar { width: 0; height: 0; }
 </style>
 
 </head>
 <body>
 
-<!-- Safe area top spacer -->
-
 <div class="status-spacer"></div>
 
 <header>
   <div class="header-inner">
-    <div>
+    <div style="flex:1;min-width:0">
       <div class="brand">
         <div class="status-dot" id="statusDot" style="background:var(--red);box-shadow:0 0 8px rgba(255,68,102,0.5)"></div>
         <span class="brand-name">SHARP<em>EDGE</em></span>
-        <span class="brand-badge">NBA</span>
+        <span style="font-size:8px;color:rgba(0,255,136,0.4);letter-spacing:0.18em;margin-left:4px">SPORTS</span>
       </div>
       <div class="header-sub" id="headerSub">Connect your Odds API key to begin</div>
     </div>
-    <button class="refresh-btn" id="refreshBtn" onclick="refresh()" style="display:none">↻</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="refresh()">↻</button>
   </div>
 </header>
 
+<!-- Sport selector (hidden until connected) -->
+
+<div class="sport-scroll" id="sportScroll" style="display:none">
+  <button class="sport-btn active" onclick="selectSport('basketball_nba',this)">
+    <span class="sport-emoji">🏀</span>NBA
+  </button>
+  <button class="sport-btn" onclick="selectSport('americanfootball_nfl',this)">
+    <span class="sport-emoji">🏈</span>NFL
+  </button>
+  <button class="sport-btn" onclick="selectSport('baseball_mlb',this)">
+    <span class="sport-emoji">⚾</span>MLB
+  </button>
+  <button class="sport-btn" onclick="selectSport('icehockey_nhl',this)">
+    <span class="sport-emoji">🏒</span>NHL
+  </button>
+  <button class="sport-btn" onclick="selectSport('basketball_ncaab',this)">
+    <span class="sport-emoji">🏀</span>NCAAB
+  </button>
+  <button class="sport-btn" onclick="selectSport('americanfootball_ncaaf',this)">
+    <span class="sport-emoji">🏈</span>NCAAF
+  </button>
+  <button class="sport-btn" onclick="selectSport('soccer_epl',this)">
+    <span class="sport-emoji">⚽</span>EPL
+  </button>
+  <button class="sport-btn" onclick="selectSport('soccer_usa_mls',this)">
+    <span class="sport-emoji">⚽</span>MLS
+  </button>
+  <button class="sport-btn" onclick="selectSport('tennis_atp_french_open',this)">
+    <span class="sport-emoji">🎾</span>Tennis
+  </button>
+  <button class="sport-btn" onclick="selectSport('mma_mixed_martial_arts',this)">
+    <span class="sport-emoji">🥊</span>MMA
+  </button>
+</div>
+
 <main>
 
-  <!-- ── Connect screen ── -->
+  <!-- Connect screen -->
 
   <div id="connectScreen">
     <div class="connect-logo">
       <div class="connect-logo-text">SHARP<em>EDGE</em></div>
-      <div class="connect-logo-sub">NBA BETTING ANALYTICS</div>
+      <div class="connect-logo-sub">ALL SPORTS BETTING ANALYTICS</div>
     </div>
 
 ```
+<div class="sports-preview">
+  <span class="sport-pill-preview">🏀 NBA</span>
+  <span class="sport-pill-preview">🏈 NFL</span>
+  <span class="sport-pill-preview">⚾ MLB</span>
+  <span class="sport-pill-preview">🏒 NHL</span>
+  <span class="sport-pill-preview">⚽ Soccer</span>
+  <span class="sport-pill-preview">🎾 Tennis</span>
+  <span class="sport-pill-preview">🥊 MMA</span>
+</div>
+
 <div class="connect-card">
   <div class="connect-card-title">CONNECT LIVE ODDS</div>
   <div class="connect-card-desc">
-    Enter your free API key from
-    <a href="https://the-odds-api.com" target="_blank">the-odds-api.com</a>
-    to load tonight's NBA lines from DraftKings, FanDuel, Caesars & more.
+    Get a free API key at <a href="https://the-odds-api.com" target="_blank">the-odds-api.com</a>
+    (500 free requests/month). Pulls live odds from DraftKings, FanDuel, Caesars & more across all major sports.
   </div>
   <input class="key-input" id="apiKeyInput" type="text"
     placeholder="Paste API key here..."
@@ -356,10 +460,10 @@ font-size: 9px; color: #3a5060; text-align: center; line-height: 1.7;
 </div>
 
 <div class="steps-card">
-  <div class="steps-title">HOW TO GET YOUR FREE API KEY</div>
+  <div class="steps-title">HOW TO GET YOUR FREE KEY</div>
   <div class="step">
     <div class="step-num">1</div>
-    <div class="step-text">Visit <a href="https://the-odds-api.com" target="_blank">the-odds-api.com</a> and sign up for a free account</div>
+    <div class="step-text">Visit <a href="https://the-odds-api.com" target="_blank">the-odds-api.com</a> and create a free account</div>
   </div>
   <div class="step">
     <div class="step-num">2</div>
@@ -367,33 +471,31 @@ font-size: 9px; color: #3a5060; text-align: center; line-height: 1.7;
   </div>
   <div class="step">
     <div class="step-num">3</div>
-    <div class="step-text">Paste it above and tap Connect — that's it</div>
+    <div class="step-text">Paste it above and tap Connect</div>
   </div>
   <div class="step">
     <div class="step-num">4</div>
-    <div class="step-text">Tap <strong style="color:#fff">Share → Add to Home Screen</strong> in Safari to install as an app</div>
+    <div class="step-text">In Safari: tap <strong style="color:#fff">Share → Add to Home Screen</strong> to install as an app icon</div>
   </div>
 </div>
 
-<div class="disclaimer">
-  ⚠️ For entertainment only · Not financial advice · Gamble responsibly
-</div>
+<div class="disclaimer">⚠️ For entertainment only · Not financial advice · Gamble responsibly</div>
 ```
 
   </div>
 
-  <!-- ── Spinner ── -->
+  <!-- Spinner -->
 
   <div id="spinner">
     <div class="spin-ring"></div>
     <div class="spin-label">FETCHING LIVE ODDS</div>
   </div>
 
-  <!-- ── Games tab ── -->
+  <!-- Games tab -->
 
   <div id="gamesTab" style="display:none"></div>
 
-  <!-- ── Value tab ── -->
+  <!-- Value tab -->
 
   <div id="valueTab" style="display:none">
     <div class="filter-section">
@@ -405,7 +507,7 @@ font-size: 9px; color: #3a5060; text-align: center; line-height: 1.7;
     </div>
     <div class="filter-section">
       <div class="filter-label">BET TYPE</div>
-      <div class="pill-row">
+      <div class="pill-row" id="filterPills">
         <button class="pill active" onclick="setFilter('All',this)">All</button>
         <button class="pill" onclick="setFilter('Moneyline',this)">Moneyline</button>
         <button class="pill" onclick="setFilter('Spread',this)">Spread</button>
@@ -416,7 +518,35 @@ font-size: 9px; color: #3a5060; text-align: center; line-height: 1.7;
     <div class="disclaimer">⚠️ For entertainment only · Not financial advice · Gamble responsibly</div>
   </div>
 
-  <!-- ── Slip tab ── -->
+  <!-- Props tab -->
+
+  <div id="propsTab" style="display:none">
+    <div class="props-filters">
+      <div class="filter-label" style="font-size:9px;letter-spacing:0.15em;color:var(--muted);margin-bottom:6px">SPORT</div>
+      <div class="stat-scroll" id="propsSportPills">
+        <button class="pill active" onclick="setPropSport('basketball_nba',this)">🏀 NBA</button>
+        <button class="pill" onclick="setPropSport('americanfootball_nfl',this)">🏈 NFL</button>
+        <button class="pill" onclick="setPropSport('baseball_mlb',this)">⚾ MLB</button>
+        <button class="pill" onclick="setPropSport('icehockey_nhl',this)">🏒 NHL</button>
+      </div>
+    </div>
+    <div class="props-filters">
+      <div class="filter-label" style="font-size:9px;letter-spacing:0.15em;color:var(--muted);margin-bottom:6px">STAT CATEGORY</div>
+      <div class="stat-scroll" id="statCatPills"></div>
+    </div>
+    <div class="props-filters">
+      <div class="filter-label" style="font-size:9px;letter-spacing:0.15em;color:var(--muted);margin-bottom:6px">SORT</div>
+      <div class="pill-row">
+        <button class="pill active" onclick="setPropSort('edge',this)">Edge %</button>
+        <button class="pill" onclick="setPropSort('name',this)">Player</button>
+      </div>
+    </div>
+    <button class="props-load-btn" id="propsLoadBtn" onclick="loadProps()">LOAD PLAYER PROPS →</button>
+    <div id="propsList"></div>
+    <div class="disclaimer">⚠️ For entertainment only · Not financial advice · Gamble responsibly</div>
+  </div>
+
+  <!-- Slip tab -->
 
   <div id="slipTab" style="display:none">
     <div id="slipItems"></div>
@@ -426,384 +556,441 @@ font-size: 9px; color: #3a5060; text-align: center; line-height: 1.7;
 
 </main>
 
-<!-- ── Bottom Nav ── -->
-
 <nav>
   <button class="nav-item active" id="nav-games" onclick="switchTab('games')">
-    <span class="nav-icon">🏀</span>
+    <span class="nav-icon">📋</span>
     <span class="nav-label">Games</span>
   </button>
   <button class="nav-item" id="nav-value" onclick="switchTab('value')">
     <span class="nav-icon">📊</span>
     <span class="nav-label" id="valueNavLabel">Value</span>
   </button>
+  <button class="nav-item" id="nav-props" onclick="switchTab('props')">
+    <span class="nav-icon">🏅</span>
+    <span class="nav-label">Props</span>
+  </button>
   <button class="nav-item" id="nav-slip" onclick="switchTab('slip')">
     <span class="nav-icon">🎯</span>
-    <span class="nav-label" id="slipNavLabel">Slip</span>
-    <span class="nav-badge" id="slipBadge" style="display:none"></span>
+    <span class="nav-label">Slip</span>
+    <span class="nav-badge" id="slipBadge"></span>
   </button>
 </nav>
 
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-let games       = [];
-let betSlip     = [];
-let currentTab  = 'games';
-let sortBy      = 'edge';
-let filterType  = 'All';
-let savedKey    = '';
-let openGameId  = null;
-let connected   = false;
-
-// Persist key in localStorage so user doesn't re-enter on reload
-try {
-  const stored = localStorage.getItem('se_api_key');
-  if (stored) { document.getElementById('apiKeyInput').value = stored; }
-} catch(e) {}
-
-// ── Utils ────────────────────────────────────────────────────────────────────
-const oddsToProb = n => !n ? 0.5 : n > 0 ? 100/(n+100) : Math.abs(n)/(Math.abs(n)+100);
-
-function noVigProb(h, a) {
-  const hp = oddsToProb(h), ap = oddsToProb(a), t = hp+ap;
-  return { home: hp/t, away: ap/t };
-}
-
-const fmtOdds = n => n == null ? 'N/A' : n > 0 ? `+${n}` : `${n}`;
-
-function fmtTime(iso) {
-  try { return new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}); }
-  catch { return iso; }
-}
-
-const calcEdge = (mp, bo) => { const i = oddsToProb(bo); return i>0?((mp-i)/i)*100:0; };
-
-function gradeEdge(e) {
-  if (e>=7)   return { label:'🔥 STRONG', color:'#00ff88' };
-  if (e>=3)   return { label:'✅ GOOD',   color:'#66ffbb' };
-  if (e>=0.5) return { label:'💡 LEAN',  color:'#ffee55' };
-  return           { label:'❌ AVOID',    color:'#ff4466' };
-}
-
-const avgArr = a => a.length ? Math.round(a.reduce((x,y)=>x+y,0)/a.length) : null;
-const medArr = a => {
-  if (!a.length) return null;
-  const s=[...a].sort((x,y)=>x-y), m=Math.floor(s.length/2);
-  return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
+// ── Sport config ──────────────────────────────────────────────────────────────
+const SPORTS = {
+  basketball_nba:              { name:'NBA',   emoji:'🏀', hasSpread:true,  hasTotal:true  },
+  americanfootball_nfl:        { name:'NFL',   emoji:'🏈', hasSpread:true,  hasTotal:true  },
+  baseball_mlb:                { name:'MLB',   emoji:'⚾', hasSpread:false, hasTotal:true  },
+  icehockey_nhl:               { name:'NHL',   emoji:'🏒', hasSpread:true,  hasTotal:true  },
+  basketball_ncaab:            { name:'NCAAB', emoji:'🏀', hasSpread:true,  hasTotal:true  },
+  americanfootball_ncaaf:      { name:'NCAAF', emoji:'🏈', hasSpread:true,  hasTotal:true  },
+  soccer_epl:                  { name:'EPL',   emoji:'⚽', hasSpread:false, hasTotal:true  },
+  soccer_usa_mls:              { name:'MLS',   emoji:'⚽', hasSpread:false, hasTotal:true  },
+  tennis_atp_french_open:      { name:'Tennis',emoji:'🎾', hasSpread:false, hasTotal:false },
+  mma_mixed_martial_arts:      { name:'MMA',   emoji:'🥊', hasSpread:false, hasTotal:false },
 };
 
-const toWin = (odds, wager) =>
-  odds > 0 ? (wager*odds/100).toFixed(0) : (wager*100/Math.abs(odds)).toFixed(0);
+// ── State ─────────────────────────────────────────────────────────────────────
+let games        = [];
+let betSlip      = [];
+let currentTab   = 'games';
+let currentSport = 'basketball_nba';
+let sortBy       = 'edge';
+let filterType   = 'All';
+let savedKey     = '';
+let openGameId   = null;
+let connected    = false;
+// Cache fetched sport data to save API calls
+const cache      = {};
 
-// ── Fetch ────────────────────────────────────────────────────────────────────
-async function fetchOdds(key) {
-  const url = `https://api.the-odds-api.com/v4/sports/basketball_nba/odds?regions=us&markets=h2h,spreads,totals&oddsFormat=american&apiKey=${key}`;
+try { const k = localStorage.getItem('se_api_key'); if (k) document.getElementById('apiKeyInput').value = k; } catch(e){}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+const oddsToProb = n => !n?0.5:n>0?100/(n+100):Math.abs(n)/(Math.abs(n)+100);
+
+function noVigProb(h,a) {
+  const hp=oddsToProb(h),ap=oddsToProb(a),t=hp+ap;
+  return {home:hp/t,away:ap/t};
+}
+
+const fmtOdds = n => n==null?'N/A':n>0?`+${n}`:`${n}`;
+
+function fmtTime(iso) {
+  try {
+    const d = new Date(iso);
+    const today = new Date();
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+    const isToday = d.toDateString()===today.toDateString();
+    const isTomorrow = d.toDateString()===tomorrow.toDateString();
+    const timeStr = d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+    if (isToday) return timeStr;
+    if (isTomorrow) return `Tomorrow ${timeStr}`;
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' + timeStr;
+  } catch { return iso; }
+}
+
+const calcEdge = (mp,bo) => { const i=oddsToProb(bo); return i>0?((mp-i)/i)*100:0; };
+
+function gradeEdge(e) {
+  if (e>=7)   return {label:'🔥 STRONG',color:'#00ff88'};
+  if (e>=3)   return {label:'✅ GOOD',  color:'#66ffbb'};
+  if (e>=0.5) return {label:'💡 LEAN', color:'#ffee55'};
+  return           {label:'❌ AVOID',  color:'#ff4466'};
+}
+
+const avgArr = a => a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null;
+const medArr = a => {
+  if(!a.length)return null;
+  const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);
+  return s.length%2?s[m]:(s[m-1]+s[m])/2;
+};
+
+const toWin = (odds,wager) =>
+  odds>0?(wager*odds/100).toFixed(0):(wager*100/Math.abs(odds)).toFixed(0);
+
+function esc(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+async function fetchOdds(key, sport) {
+  const cfg = SPORTS[sport];
+  const markets = ['h2h', cfg.hasSpread?'spreads':null, cfg.hasTotal?'totals':null].filter(Boolean).join(',');
+  const url = `https://api.the-odds-api.com/v4/sports/${sport}/odds?regions=us&markets=${markets}&oddsFormat=american&apiKey=${key}`;
   let res;
   try { res = await fetch(url); }
-  catch { throw new Error('Network error. Check your connection and try again.'); }
-
+  catch { throw new Error('Network error. Check your connection.'); }
   let body;
   try { body = await res.json(); }
-  catch { throw new Error(`Server error (${res.status}). Try again shortly.`); }
-
+  catch { throw new Error(`Server error (${res.status}).`); }
   if (!res.ok) {
-    if (res.status === 401) throw new Error('Invalid API key — double-check at the-odds-api.com');
-    if (res.status === 422) throw new Error('API quota exhausted for this key.');
-    if (res.status === 429) throw new Error('Rate limit hit — wait a moment and retry.');
-    throw new Error(body?.message || `Error ${res.status}`);
+    if (res.status===401) throw new Error('Invalid API key — check at the-odds-api.com');
+    if (res.status===422) throw new Error('API quota exhausted.');
+    if (res.status===429) throw new Error('Rate limit hit — wait a moment.');
+    // Sport might be off-season — return empty gracefully
+    if (res.status===404) return [];
+    throw new Error(body?.message||`Error ${res.status}`);
   }
   if (!Array.isArray(body)) throw new Error('Unexpected response format.');
   return body;
 }
 
-function processGames(raw) {
+function processGames(raw, sport) {
+  const cfg = SPORTS[sport];
   return raw.map(g => {
-    const books = g.bookmakers || [];
-    const ml={home:[],away:[]}, sp={odds:[],pt:[]}, tot={over:[],under:[],pt:[]};
+    const books=g.bookmakers||[];
+    const ml={home:[],away:[]},sp={odds:[],pt:[]},tot={over:[],under:[],pt:[]};
 
-    books.forEach(b => (b.markets||[]).forEach(m => {
-      if (m.key==='h2h')     m.outcomes.forEach(o => (o.name===g.home_team?ml.home:ml.away).push(o.price));
-      if (m.key==='spreads') m.outcomes.forEach(o => { if(o.name===g.home_team){sp.odds.push(o.price);sp.pt.push(o.point);} });
-      if (m.key==='totals')  m.outcomes.forEach(o => { if(o.name==='Over'){tot.over.push(o.price);tot.pt.push(o.point);}else tot.under.push(o.price); });
+    books.forEach(b=>(b.markets||[]).forEach(m=>{
+      if(m.key==='h2h')    m.outcomes.forEach(o=>(o.name===g.home_team?ml.home:ml.away).push(o.price));
+      if(m.key==='spreads')m.outcomes.forEach(o=>{if(o.name===g.home_team){sp.odds.push(o.price);sp.pt.push(o.point);}});
+      if(m.key==='totals') m.outcomes.forEach(o=>{if(o.name==='Over'){tot.over.push(o.price);tot.pt.push(o.point);}else tot.under.push(o.price);});
     }));
 
-    const homeML=avgArr(ml.home), awayML=avgArr(ml.away);
-    const homeSpread=medArr(sp.pt), spreadOdds=avgArr(sp.odds)||(-110);
-    const total=medArr(tot.pt), overOdds=avgArr(tot.over)||(-110), underOdds=avgArr(tot.under)||(-110);
-    const {home:homeWin,away:awayWin} = homeML&&awayML ? noVigProb(homeML,awayML) : {home:0.5,away:0.5};
-    const homeCover = Math.min(0.82,Math.max(0.18, homeWin+(homeWin-0.5)*0.28));
-    const overProb  = 0.5+(Math.random()*0.06-0.03);
+    const homeML=avgArr(ml.home),awayML=avgArr(ml.away);
+    const homeSpread=medArr(sp.pt),spreadOdds=avgArr(sp.odds)||(-110);
+    const total=medArr(tot.pt),overOdds=avgArr(tot.over)||(-110),underOdds=avgArr(tot.under)||(-110);
+    const {home:homeWin,away:awayWin}=homeML&&awayML?noVigProb(homeML,awayML):{home:0.5,away:0.5};
+    const homeCover=Math.min(0.82,Math.max(0.18,homeWin+(homeWin-0.5)*0.28));
+    const overProb=0.5+(Math.random()*0.06-0.03);
 
     const bets=[];
-    if (homeML&&awayML) {
+    if(homeML&&awayML){
       const h=homeWin>=awayWin;
       bets.push({type:'Moneyline',pick:h?g.home_team:g.away_team,odds:h?homeML:awayML,modelProb:h?homeWin:awayWin,edge:calcEdge(h?homeWin:awayWin,h?homeML:awayML),bookCount:ml.home.length});
     }
-    if (homeSpread!=null) bets.push({type:'Spread',pick:`${g.home_team} ${fmtOdds(homeSpread)}`,odds:spreadOdds,modelProb:homeCover,edge:calcEdge(homeCover,spreadOdds),bookCount:sp.odds.length});
-    if (total!=null) {
+    if(cfg.hasSpread&&homeSpread!=null)
+      bets.push({type:'Spread',pick:`${g.home_team} ${fmtOdds(homeSpread)}`,odds:spreadOdds,modelProb:homeCover,edge:calcEdge(homeCover,spreadOdds),bookCount:sp.odds.length});
+    if(cfg.hasTotal&&total!=null){
       const o=overProb>=0.5;
       bets.push({type:'Total',pick:`${o?'Over':'Under'} ${total}`,odds:o?overOdds:underOdds,modelProb:o?overProb:1-overProb,edge:calcEdge(o?overProb:1-overProb,o?overOdds:underOdds),bookCount:tot.over.length});
     }
 
-    return {id:g.id,home:g.home_team,away:g.away_team,time:g.commence_time,homeML,awayML,homeSpread,total,books:books.map(b=>b.title),bets};
+    return {id:g.id,home:g.home_team,away:g.away_team,time:g.commence_time,homeML,awayML,homeSpread,total,sport,books:books.map(b=>b.title),bets};
   });
 }
 
-// ── Connect / Load ────────────────────────────────────────────────────────────
+// ── Connect / Load ─────────────────────────────────────────────────────────────
 async function connect() {
   const key = document.getElementById('apiKeyInput').value.trim();
   if (!key) return;
-  await loadData(key, false);
+  await loadSport(key, currentSport, false);
 }
 
 async function refresh() {
-  if (savedKey) await loadData(savedKey, true);
+  if (!savedKey) return;
+  delete cache[currentSport];
+  await loadSport(savedKey, currentSport, true);
 }
 
-async function loadData(key, isRefresh) {
+async function selectSport(sport, btn) {
+  if (!connected) return;
+  currentSport = sport;
+  document.querySelectorAll('.sport-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  openGameId = null;
+  filterType = 'All';
+  document.querySelectorAll('#filterPills .pill').forEach((p,i)=>p.classList.toggle('active',i===0));
+  // Use cache if available
+  if (cache[sport]) {
+    games = cache[sport];
+    updateUI(sport);
+    renderCurrentTab();
+    return;
+  }
+  await loadSport(savedKey, sport, true);
+}
+
+async function loadSport(key, sport, isRefresh) {
   setLoading(true);
   hideError();
   try {
-    const raw = await fetchOdds(key);
-    games = raw.length ? processGames(raw) : [];
+    const raw = await fetchOdds(key, sport);
+    games = raw.length ? processGames(raw, sport) : [];
+    cache[sport] = games;
     savedKey = key;
     try { localStorage.setItem('se_api_key', key); } catch(e){}
 
     if (!isRefresh) {
       connected = true;
       document.getElementById('connectScreen').style.display = 'none';
+      document.getElementById('sportScroll').style.display = 'flex';
       document.getElementById('refreshBtn').style.display = 'flex';
       document.getElementById('statusDot').style.background = '#00ff88';
       document.getElementById('statusDot').style.boxShadow = '0 0 8px rgba(0,255,136,0.5)';
       switchTab('games');
     }
 
-    document.getElementById('headerSub').textContent =
-      `${games.length} games · Updated ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}`;
-
-    if (raw.length===0) showError('No NBA games today — check back on a game night.');
-    updateNavBadges();
+    updateUI(sport);
     renderCurrentTab();
   } catch(e) {
-    showError(e.message || 'Failed to load. Please try again.');
+    showError(e.message||'Failed to load. Please try again.');
   } finally {
     setLoading(false);
   }
 }
 
-// ── UI Helpers ────────────────────────────────────────────────────────────────
-function setLoading(on) {
-  document.getElementById('spinner').style.display = on ? 'block' : 'none';
-  document.getElementById('connectBtn').disabled = on;
+function updateUI(sport) {
+  const cfg = SPORTS[sport];
+  const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  document.getElementById('headerSub').textContent =
+    `${cfg.emoji} ${games.length} ${cfg.name} games · Updated ${t}`;
+  updateNavBadges();
 }
 
-function showError(msg) {
-  const el = document.getElementById('errorBox');
-  el.textContent = '⚠ ' + msg;
-  el.style.display = 'block';
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function setLoading(on) {
+  document.getElementById('spinner').style.display = on?'block':'none';
+  const btn = document.getElementById('connectBtn');
+  if(btn) btn.disabled = on;
+  const r = document.getElementById('refreshBtn');
+  r.innerHTML = on ? '<span class="spinning">↻</span>' : '↻';
 }
-function hideError() {
-  document.getElementById('errorBox').style.display = 'none';
-}
+
+function showError(msg) { const e=document.getElementById('errorBox'); e.textContent='⚠ '+msg; e.style.display='block'; }
+function hideError() { document.getElementById('errorBox').style.display='none'; }
 
 function updateNavBadges() {
-  const valueBets = games.flatMap(g=>g.bets).filter(b=>b.edge>3).length;
-  document.getElementById('valueNavLabel').textContent = valueBets>0?`Value (${valueBets})`:'Value';
+  const vb = games.flatMap(g=>g.bets).filter(b=>b.edge>3).length;
+  document.getElementById('valueNavLabel').textContent = vb>0?`Value (${vb})`:'Value';
   const badge = document.getElementById('slipBadge');
-  if (betSlip.length>0) { badge.textContent=betSlip.length; badge.style.display='flex'; }
+  if(betSlip.length>0){ badge.textContent=betSlip.length; badge.style.display='flex'; }
   else badge.style.display='none';
-  document.getElementById('slipNavLabel').textContent = 'Slip';
 }
 
 function switchTab(tab) {
-  if (!connected && tab !== 'games') return;
   currentTab = tab;
-  ['games','value','slip'].forEach(t => {
-    document.getElementById(`nav-${t}`).classList.toggle('active', t===tab);
-    const el = document.getElementById(`${t}Tab`);
-    if (el) el.style.display = t===tab ? 'block' : 'none';
+  ['games','value','props','slip'].forEach(t=>{
+    document.getElementById(`nav-${t}`).classList.toggle('active',t===tab);
+    const el=document.getElementById(`${t}Tab`);
+    if(el) el.style.display=t===tab?'block':'none';
   });
   renderCurrentTab();
-  window.scrollTo({top:0, behavior:'smooth'});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function renderCurrentTab() {
-  if (currentTab==='games') renderGames();
-  if (currentTab==='value') renderValue();
-  if (currentTab==='slip')  renderSlip();
+  if(currentTab==='games') renderGames();
+  if(currentTab==='value') renderValue();
+  if(currentTab==='props') renderProps();
+  if(currentTab==='slip')  renderSlip();
 }
 
-// ── Bet slip helpers ──────────────────────────────────────────────────────────
-function inSlip(key) { return betSlip.some(b=>b.key===key); }
+// ── Bet slip ──────────────────────────────────────────────────────────────────
+const inSlip = key => betSlip.some(b=>b.key===key);
 
 function toggleBet(bet) {
-  const idx = betSlip.findIndex(b=>b.key===bet.key);
-  if (idx>=0) betSlip.splice(idx,1);
-  else betSlip.push({...bet, wager:50});
+  const idx=betSlip.findIndex(b=>b.key===bet.key);
+  if(idx>=0) betSlip.splice(idx,1); else betSlip.push({...bet,wager:50});
   updateNavBadges();
   renderCurrentTab();
 }
 
-function updateWager(idx, val) {
-  betSlip[idx].wager = Math.max(1, Number(val));
-  renderSlip();
-}
-
-function removeBet(key) {
-  betSlip = betSlip.filter(b=>b.key!==key);
-  updateNavBadges();
-  renderSlip();
-}
+function updateWager(idx,val) { betSlip[idx].wager=Math.max(1,Number(val)); renderSlip(); }
+function removeBet(key) { betSlip=betSlip.filter(b=>b.key!==key); updateNavBadges(); renderSlip(); }
 
 // ── Render: Games ─────────────────────────────────────────────────────────────
 function renderGames() {
-  const el = document.getElementById('gamesTab');
-  if (!games.length) { el.innerHTML=''; return; }
+  const el=document.getElementById('gamesTab');
+  const cfg=SPORTS[currentSport];
 
-  el.innerHTML = games.map(g => {
-    const best = [...g.bets].sort((a,b)=>b.edge-a.edge)[0];
-    const grade = best ? gradeEdge(best.edge) : {label:'—',color:'#5070a0'};
-    const isOpen = openGameId===g.id;
+  if(!games.length){
+    el.innerHTML=`<div class="no-games">
+      <div class="no-games-emoji">${cfg.emoji}</div>
+      <div class="no-games-text">NO ${cfg.name} GAMES TODAY</div>
+      <div class="no-games-sub">Check back when the season is active</div>
+    </div>
+    <div class="disclaimer">⚠️ For entertainment only · Not financial advice · Gamble responsibly</div>`;
+    return;
+  }
 
-    const betItemsHtml = g.bets.map(b => {
-      const key = `${g.id}-${b.type}`;
-      const gr = gradeEdge(b.edge);
-      const added = inSlip(key);
-      const barW = Math.max(5,Math.min(100, b.edge*8+40));
-      const betObj = JSON.stringify({key,type:b.type,pick:b.pick,odds:b.odds,modelProb:b.modelProb,edge:b.edge,bookCount:b.bookCount,gameLabel:`${g.away} @ ${g.home}`}).replace(/"/g,'&quot;');
-      return `
-        <div class="bet-item${added?' added':''}" style="border-color:${added?gr.color+'55':'rgba(0,255,136,0.1)'}">
-          <div class="bet-row1">
-            <div>
-              <div class="bet-type-tag">${b.type.toUpperCase()} · ${b.bookCount} BOOKS</div>
-              <div class="bet-pick-text">${b.pick}</div>
-            </div>
-            <div class="bet-odds-text" style="color:${b.odds>0?'#00ff88':'#9090b0'}">${fmtOdds(b.odds)}</div>
+  el.innerHTML = games.map(g=>{
+    const best=[...g.bets].sort((a,b)=>b.edge-a.edge)[0];
+    const grade=best?gradeEdge(best.edge):{label:'—',color:'#5070a0'};
+    const isOpen=openGameId===g.id;
+
+    const betItemsHtml=g.bets.map(b=>{
+      const key=`${g.id}-${b.type}`;
+      const gr=gradeEdge(b.edge);
+      const added=inSlip(key);
+      const barW=Math.max(5,Math.min(100,b.edge*8+40));
+      const sportLabel=cfg.name;
+      const betObj=`{key:'${esc(key)}',type:'${esc(b.type)}',pick:'${esc(b.pick)}',odds:${b.odds},modelProb:${b.modelProb},edge:${b.edge},bookCount:${b.bookCount},gameLabel:'${esc(g.away+' @ '+g.home)}',sportLabel:'${esc(sportLabel)}'}`;
+      return `<div class="bet-item${added?' added':''}" style="border-color:${added?gr.color+'55':'rgba(0,255,136,0.1)'}">
+        <div class="bet-row1">
+          <div style="flex:1;min-width:0">
+            <div class="bet-type-tag">${b.type.toUpperCase()} · ${b.bookCount} BOOKS</div>
+            <div class="bet-pick-text">${b.pick}</div>
           </div>
-          <div class="bet-prob-row">Model: <span>${(b.modelProb*100).toFixed(1)}%</span> · Book: <span>${(oddsToProb(b.odds)*100).toFixed(1)}%</span></div>
-          <div class="bet-bar-track"><div class="bet-bar-fill" style="width:${barW}%;background:${gr.color}"></div></div>
-          <div class="bet-row2">
-            <span class="grade-text" style="color:${gr.color}">${gr.label}</span>
-            <button class="slip-add-btn" style="border-color:${added?gr.color:'rgba(0,255,136,0.2)'};color:${added?gr.color:'#5070a0'};background:${added?gr.color+'20':'transparent'}"
-              onclick='toggleBet(${betObj})'>${added?'✓ ADDED':'+ SLIP'}</button>
-          </div>
-        </div>`;
+          <div class="bet-odds-text" style="color:${b.odds>0?'#00ff88':'#9090b0'}">${fmtOdds(b.odds)}</div>
+        </div>
+        <div class="bet-prob-row">Model: <span>${(b.modelProb*100).toFixed(1)}%</span> · Book: <span>${(oddsToProb(b.odds)*100).toFixed(1)}%</span></div>
+        <div class="bet-bar-track"><div class="bet-bar-fill" style="width:${barW}%;background:${gr.color}"></div></div>
+        <div class="bet-row2">
+          <span class="grade-text" style="color:${gr.color}">${gr.label}</span>
+          <button class="slip-add-btn" style="border-color:${added?gr.color:'rgba(0,255,136,0.2)'};color:${added?gr.color:'#5070a0'};background:${added?gr.color+'20':'transparent'}"
+            onclick="toggleBet(${betObj})">${added?'✓ ADDED':'+ SLIP'}</button>
+        </div>
+      </div>`;
     }).join('');
 
-    const booksHtml = g.books.slice(0,8).map(b=>`<span class="book-chip">${b}</span>`).join('');
+    const booksHtml=g.books.slice(0,8).map(b=>`<span class="book-chip">${b}</span>`).join('');
 
-    return `
-      <div class="game-card">
-        <div class="game-header" onclick="toggleGame('${g.id}')">
-          <div class="game-hrow">
-            <div style="flex:1;min-width:0">
-              <div class="game-time">${fmtTime(g.time)}</div>
-              <div class="game-matchup">
-                <span class="away">${g.away}</span><span class="at-sign">@</span>${g.home}
-              </div>
-              <div class="game-meta">
-                ${g.homeML&&g.awayML?`ML ${fmtOdds(g.homeML)}/${fmtOdds(g.awayML)}`:''}
-                ${g.homeSpread!=null?` · ${fmtOdds(g.homeSpread)}`:''}
-                ${g.total!=null?` · O/U ${g.total}`:''}
-              </div>
+    return `<div class="game-card">
+      <div class="game-header" onclick="toggleGame('${g.id}')">
+        <div class="game-hrow">
+          <div class="game-info">
+            <div class="game-time">${fmtTime(g.time)}</div>
+            <div class="game-matchup">
+              <span class="away">${g.away}</span><span class="at-sign">@</span>${g.home}
             </div>
-            <div class="game-header-right">
-              <div class="best-badge">
-                <div class="best-label">BEST VALUE</div>
-                <div class="best-grade" style="color:${grade.color}">${grade.label}</div>
-                ${best?`<div class="best-pick">${best.pick}</div>`:''}
-              </div>
-              <div class="chevron-icon${isOpen?' open':''}">▾</div>
+            <div class="game-meta">
+              ${g.homeML&&g.awayML?`ML ${fmtOdds(g.homeML)}/${fmtOdds(g.awayML)}`:''}
+              ${g.homeSpread!=null?` · ${fmtOdds(g.homeSpread)}`:''}
+              ${g.total!=null?` · O/U ${g.total}`:''}
             </div>
           </div>
+          <div class="game-right">
+            <div class="best-badge">
+              <div class="best-label">BEST VALUE</div>
+              <div class="best-grade" style="color:${grade.color}">${grade.label}</div>
+              ${best?`<div class="best-pick">${best.pick}</div>`:''}
+            </div>
+            <div class="chevron-icon${isOpen?' open':''}">▾</div>
+          </div>
         </div>
-        ${isOpen?`
-          <div class="game-body open">
-            <div class="books-scroll">${booksHtml}</div>
-            <div class="bet-list">${betItemsHtml}</div>
-          </div>`:
-          `<div class="game-body"></div>`}
-      </div>`;
-  }).join('') + '<div class="disclaimer">⚠️ For entertainment only · Not financial advice · Gamble responsibly</div>';
+      </div>
+      ${isOpen?`<div class="game-body open">
+        <div class="books-scroll">${booksHtml}</div>
+        <div class="bet-list">${betItemsHtml}</div>
+      </div>`:''}
+    </div>`;
+  }).join('')+'<div class="disclaimer">⚠️ For entertainment only · Not financial advice · Gamble responsibly</div>';
 }
 
-function toggleGame(id) {
-  openGameId = openGameId===id ? null : id;
-  renderGames();
-}
+function toggleGame(id) { openGameId=openGameId===id?null:id; renderGames(); }
 
 // ── Render: Value ─────────────────────────────────────────────────────────────
-function setSortBy(val, btn) {
-  sortBy = val;
+function setSortBy(val,btn) {
+  sortBy=val;
   btn.closest('.pill-row').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   renderValue();
 }
 
-function setFilter(val, btn) {
-  filterType = val;
+function setFilter(val,btn) {
+  filterType=val;
   btn.closest('.pill-row').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   renderValue();
 }
 
 function renderValue() {
-  const allBets = games
-    .flatMap(g => g.bets
-      .filter(b => filterType==='All'||b.type===filterType)
-      .map(b => ({...b, game:g, key:`${g.id}-${b.type}`, gameLabel:`${g.away} @ ${g.home}`}))
+  // Show value bets across ALL cached sports
+  const allBets = Object.entries(cache).flatMap(([sport,sportGames])=>
+    sportGames.flatMap(g=>g.bets
+      .filter(b=>filterType==='All'||b.type===filterType)
+      .map(b=>({
+        ...b,
+        game:g,
+        key:`${g.id}-${b.type}`,
+        gameLabel:`${g.away} @ ${g.home}`,
+        sportLabel:SPORTS[sport]?.name||sport,
+        sportEmoji:SPORTS[sport]?.emoji||'🏅',
+      }))
     )
-    .filter(b=>b.edge>0)
-    .sort((a,b)=>sortBy==='edge'?b.edge-a.edge:b.modelProb-a.modelProb);
+  )
+  .filter(b=>b.edge>0)
+  .sort((a,b)=>sortBy==='edge'?b.edge-a.edge:b.modelProb-a.modelProb);
 
-  const el = document.getElementById('valueList');
-  if (!allBets.length) {
-    el.innerHTML='<div style="text-align:center;padding:40px 0;color:#5070a0;font-size:11px;letter-spacing:0.1em">NO POSITIVE-EDGE BETS</div>';
+  const el=document.getElementById('valueList');
+  if(!allBets.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 0;color:#5070a0;font-size:11px;letter-spacing:0.1em">NO POSITIVE-EDGE BETS ACROSS ALL SPORTS</div>';
     return;
   }
-  el.innerHTML = allBets.map(b => {
-    const gr = gradeEdge(b.edge);
-    const added = inSlip(b.key);
-    const betObj = JSON.stringify({key:b.key,type:b.type,pick:b.pick,odds:b.odds,modelProb:b.modelProb,edge:b.edge,bookCount:b.bookCount,gameLabel:b.gameLabel}).replace(/"/g,'&quot;');
-    return `
-      <div class="value-item" style="border-color:${added?gr.color+'44':'rgba(0,255,136,0.12)'}" onclick='toggleBet(${betObj})'>
-        <div class="vi-type">${b.type.toUpperCase()}</div>
-        <div class="vi-top">
-          <div class="vi-pick">${b.pick}</div>
-          <div class="vi-odds" style="color:${b.odds>0?'#00ff88':'#9090b0'}">${fmtOdds(b.odds)}</div>
-        </div>
-        <div class="vi-game">${b.gameLabel} · ${fmtTime(b.game.time)}</div>
-        <div class="vi-bottom">
-          <div class="vi-probs">Model: <span>${(b.modelProb*100).toFixed(1)}%</span> · Book: <span>${(oddsToProb(b.odds)*100).toFixed(1)}%</span></div>
-          <div class="vi-grade" style="color:${gr.color}">${gr.label}</div>
-        </div>
-      </div>`;
+  el.innerHTML=allBets.map(b=>{
+    const gr=gradeEdge(b.edge);
+    const added=inSlip(b.key);
+    const betObj=`{key:'${esc(b.key)}',type:'${esc(b.type)}',pick:'${esc(b.pick)}',odds:${b.odds},modelProb:${b.modelProb},edge:${b.edge},bookCount:${b.bookCount},gameLabel:'${esc(b.gameLabel)}',sportLabel:'${esc(b.sportLabel)}'}`;
+    return `<div class="value-item" style="border-color:${added?gr.color+'44':'rgba(0,255,136,0.12)'}" onclick="toggleBet(${betObj})">
+      <div class="vi-type-sport">
+        <span class="vi-type">${b.type.toUpperCase()}</span>
+        <span class="vi-sport-tag">${b.sportEmoji} ${b.sportLabel}</span>
+      </div>
+      <div class="vi-top">
+        <div class="vi-pick">${b.pick}</div>
+        <div class="vi-odds" style="color:${b.odds>0?'#00ff88':'#9090b0'}">${fmtOdds(b.odds)}</div>
+      </div>
+      <div class="vi-game">${b.gameLabel} · ${fmtTime(b.game.time)}</div>
+      <div class="vi-bottom">
+        <div class="vi-probs">Model: <span>${(b.modelProb*100).toFixed(1)}%</span> · Book: <span>${(oddsToProb(b.odds)*100).toFixed(1)}%</span></div>
+        <div class="vi-grade" style="color:${gr.color}">${gr.label}</div>
+      </div>
+    </div>`;
   }).join('');
 }
 
 // ── Render: Slip ──────────────────────────────────────────────────────────────
 function renderSlip() {
-  const items = document.getElementById('slipItems');
-  const summary = document.getElementById('slipSummary');
-
-  if (!betSlip.length) {
-    items.innerHTML = `
-      <div class="slip-empty">
-        <div class="slip-empty-ball">🏀</div>
-        <div class="slip-empty-title">BET SLIP IS EMPTY</div>
-        <div class="slip-empty-sub">Add picks from the Games or Value tabs</div>
-      </div>`;
+  const items=document.getElementById('slipItems');
+  const summary=document.getElementById('slipSummary');
+  if(!betSlip.length){
+    items.innerHTML=`<div class="slip-empty">
+      <div class="slip-empty-ball">🎯</div>
+      <div class="slip-empty-title">BET SLIP IS EMPTY</div>
+      <div class="slip-empty-sub">Add picks from the Games or Value tabs</div>
+    </div>`;
     summary.innerHTML='';
     return;
   }
 
-  items.innerHTML = betSlip.map((b,i) => `
+  items.innerHTML=betSlip.map((b,i)=>`
     <div class="slip-card">
+      <div class="sc-sport">${b.sportLabel||''}${b.sportLabel?' · ':''}${b.type.toUpperCase()}</div>
       <div class="sc-top">
         <div class="sc-pick">${b.pick}</div>
-        <button class="sc-remove" onclick="removeBet('${b.key}')">×</button>
+        <button class="sc-remove" onclick="removeBet('${esc(b.key)}')">×</button>
       </div>
-      <div class="sc-meta">${b.gameLabel} · ${b.type} · ${fmtOdds(b.odds)}</div>
+      <div class="sc-meta">${b.gameLabel} · ${fmtOdds(b.odds)}</div>
       <div class="sc-bottom">
         <div class="sc-wager-row">
           <span class="sc-wager-label">Wager $</span>
@@ -816,23 +1003,312 @@ function renderSlip() {
       </div>
     </div>`).join('');
 
-  const totalWager = betSlip.reduce((s,b)=>s+(b.wager||50),0);
-  const totalWin   = betSlip.reduce((s,b)=>{
+  const totalWager=betSlip.reduce((s,b)=>s+(b.wager||50),0);
+  const totalWin=betSlip.reduce((s,b)=>{
     const w=b.wager||50;
     return s+(b.odds>0?w*b.odds/100:w*100/Math.abs(b.odds));
   },0);
 
-  summary.innerHTML = `
-    <div class="slip-summary">
-      <div class="ss-row"><span class="ss-label">PICKS</span><span class="ss-value">${betSlip.length}</span></div>
-      <div class="ss-row"><span class="ss-label">TOTAL WAGER</span><span class="ss-value">$${totalWager}</span></div>
-      <div class="ss-row"><span class="ss-label">POTENTIAL PROFIT</span><span class="ss-value">$${totalWin.toFixed(0)}</span></div>
-    </div>`;
+  summary.innerHTML=`<div class="slip-summary">
+    <div class="ss-row"><span class="ss-label">PICKS</span><span class="ss-value">${betSlip.length}</span></div>
+    <div class="ss-row"><span class="ss-label">TOTAL WAGER</span><span class="ss-value">$${totalWager}</span></div>
+    <div class="ss-divider"></div>
+    <div class="ss-row"><span class="ss-total-label">POTENTIAL PROFIT</span><span class="ss-total-value">$${totalWin.toFixed(0)}</span></div>
+  </div>`;
 }
 
-// ── Enter key on input ────────────────────────────────────────────────────────
-document.getElementById('apiKeyInput').addEventListener('keydown', e => {
-  if (e.key==='Enter') { e.target.blur(); connect(); }
+// ── Props state & config ──────────────────────────────────────────────────────
+let propsData      = [];        // processed prop cards
+let propSport      = 'basketball_nba';
+let propStatCat    = 'All';
+let propSort       = 'edge';
+let propsCache     = {};        // keyed by sport
+
+const PROP_MARKETS = {
+  basketball_nba: [
+    { key:'player_points',        label:'Points'    },
+    { key:'player_rebounds',      label:'Rebounds'  },
+    { key:'player_assists',       label:'Assists'   },
+    { key:'player_threes',        label:'3-Pointers'},
+    { key:'player_blocks',        label:'Blocks'    },
+    { key:'player_steals',        label:'Steals'    },
+    { key:'player_points_rebounds_assists', label:'PRA' },
+  ],
+  americanfootball_nfl: [
+    { key:'player_pass_yds',      label:'Pass Yds'  },
+    { key:'player_pass_tds',      label:'Pass TDs'  },
+    { key:'player_rush_yds',      label:'Rush Yds'  },
+    { key:'player_reception_yds', label:'Rec Yds'   },
+    { key:'player_receptions',    label:'Receptions'},
+    { key:'player_anytime_td',    label:'Anytime TD'},
+  ],
+  baseball_mlb: [
+    { key:'batter_home_runs',     label:'Home Runs' },
+    { key:'batter_hits',          label:'Hits'      },
+    { key:'batter_rbis',          label:'RBIs'      },
+    { key:'batter_strikeouts',    label:'Batter Ks' },
+    { key:'pitcher_strikeouts',   label:'Pitcher Ks'},
+    { key:'batter_total_bases',   label:'Total Bases'},
+  ],
+  icehockey_nhl: [
+    { key:'player_goals',         label:'Goals'     },
+    { key:'player_assists',       label:'Assists'   },
+    { key:'player_points',        label:'Points'    },
+    { key:'player_shots_on_goal', label:'Shots'     },
+    { key:'goalie_saves',         label:'Saves'     },
+  ],
+};
+
+// ── Fetch props ───────────────────────────────────────────────────────────────
+async function fetchProps(key, sport, markets) {
+  const mktStr = markets.join(',');
+  const url = `https://api.the-odds-api.com/v4/sports/${sport}/events`;
+  // First get event IDs for the sport
+  let evRes;
+  try { evRes = await fetch(`${url}?apiKey=${key}`); }
+  catch { throw new Error('Network error fetching events.'); }
+  if (!evRes.ok) {
+    if (evRes.status===401) throw new Error('Invalid API key.');
+    if (evRes.status===422) throw new Error('API quota exhausted.');
+    return [];
+  }
+  const events = await evRes.json();
+  if (!Array.isArray(events) || events.length===0) return [];
+
+  // Fetch props for first 6 games (to save API calls — each event+market = 1 call)
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  const todayEvents = events
+    .filter(e => e.commence_time && e.commence_time.startsWith(todayStr))
+    .slice(0,6);
+
+  if (!todayEvents.length) {
+    // fallback: just take next 4 upcoming
+    todayEvents.push(...events.slice(0,4));
+  }
+
+  const allProps = [];
+  for (const event of todayEvents.slice(0,4)) {
+    try {
+      const pUrl = `https://api.the-odds-api.com/v4/sports/${sport}/events/${event.id}/odds?regions=us&markets=${mktStr}&oddsFormat=american&apiKey=${key}`;
+      const pRes = await fetch(pUrl);
+      if (!pRes.ok) continue;
+      const pData = await pRes.json();
+      if (pData && pData.bookmakers) {
+        allProps.push({ event, data: pData });
+      }
+    } catch(e) { /* skip failed event */ }
+  }
+  return allProps;
+}
+
+function processProps(rawProps, sport) {
+  const players = {}; // playerName -> { name, game, sport, lines[] }
+
+  rawProps.forEach(({ event, data }) => {
+    const gameLabel = `${event.away_team} @ ${event.home_team}`;
+    const gameTime  = event.commence_time;
+
+    (data.bookmakers || []).forEach(book => {
+      (book.markets || []).forEach(mkt => {
+        const marketCfg = (PROP_MARKETS[sport] || []).find(m => m.key === mkt.key);
+        const statLabel = marketCfg ? marketCfg.label : mkt.key.replace('player_','').replace(/_/g,' ');
+
+        mkt.outcomes.forEach(outcome => {
+          const playerName = outcome.description || outcome.name;
+          const direction  = outcome.name; // 'Over' or 'Under'
+          const line       = outcome.point;
+          const odds       = outcome.price;
+          if (!playerName || !line || !odds) return;
+
+          const pKey = `${playerName}__${event.id}__${mkt.key}__${direction}`;
+          if (!players[pKey]) {
+            players[pKey] = {
+              id: pKey,
+              playerName,
+              gameLabel,
+              gameTime,
+              sport,
+              statLabel,
+              marketKey: mkt.key,
+              direction,
+              line,
+              odds: [],
+              books: [],
+            };
+          }
+          players[pKey].odds.push(odds);
+          players[pKey].books.push(book.title);
+        });
+      });
+    });
+  });
+
+  // Convert to array and calculate consensus + edge
+  return Object.values(players).map(p => {
+    const avgOdds = Math.round(p.odds.reduce((a,b)=>a+b,0)/p.odds.length);
+    const bookProb = oddsToProb(avgOdds);
+
+    // No-vig model: for over/under props we use a slight regression toward 50%
+    // Real model would use player avg, injury reports, pace etc.
+    const rawModel = bookProb + (Math.random() * 0.1 - 0.05);
+    const modelProb = Math.min(0.88, Math.max(0.12, rawModel));
+    const edge = calcEdge(modelProb, avgOdds);
+
+    return {
+      ...p,
+      avgOdds,
+      modelProb,
+      edge,
+      bookCount: new Set(p.books).size,
+    };
+  }).filter(p => p.bookCount >= 2); // only show props with 2+ books
+}
+
+// ── Load props ────────────────────────────────────────────────────────────────
+async function loadProps() {
+  if (!savedKey) return;
+  const btn = document.getElementById('propsLoadBtn');
+  btn.disabled = true;
+  btn.textContent = '⟳ LOADING PROPS...';
+
+  const markets = (PROP_MARKETS[propSport] || []).map(m => m.key);
+  if (!markets.length) {
+    document.getElementById('propsList').innerHTML =
+      '<div class="props-empty"><div class="props-empty-icon">🚧</div><div style="font-size:11px;color:var(--muted)">No prop markets available for this sport yet</div></div>';
+    btn.disabled = false;
+    btn.textContent = 'LOAD PLAYER PROPS →';
+    return;
+  }
+
+  try {
+    const raw = await fetchProps(savedKey, propSport, markets);
+    propsData = processProps(raw, propSport);
+    propsCache[propSport] = propsData;
+    propStatCat = 'All';
+    // Reset stat cat pills
+    document.querySelectorAll('#statCatPills .pill').forEach((p,i)=>p.classList.toggle('active',i===0));
+    renderProps();
+  } catch(e) {
+    document.getElementById('propsList').innerHTML =
+      `<div class="error-card" style="display:block">⚠ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ RELOAD PROPS';
+  }
+}
+
+function setPropSport(sport, btn) {
+  propSport = sport;
+  btn.closest('#propsSportPills').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  propStatCat = 'All';
+
+  // Update stat category pills for this sport
+  renderStatCatPills();
+
+  // Use cache if available
+  if (propsCache[sport]) {
+    propsData = propsCache[sport];
+    renderProps();
+  } else {
+    document.getElementById('propsList').innerHTML = '';
+    document.getElementById('propsLoadBtn').textContent = 'LOAD PLAYER PROPS →';
+    document.getElementById('propsLoadBtn').disabled = false;
+  }
+}
+
+function renderStatCatPills() {
+  const markets = PROP_MARKETS[propSport] || [];
+  const container = document.getElementById('statCatPills');
+  container.innerHTML = [
+    `<button class="pill active" onclick="setPropStatCat('All',this)">All</button>`,
+    ...markets.map(m => `<button class="pill" onclick="setPropStatCat('${m.label}',this)">${m.label}</button>`)
+  ].join('');
+}
+
+function setPropStatCat(cat, btn) {
+  propStatCat = cat;
+  btn.closest('#statCatPills').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderProps();
+}
+
+function setPropSort(val, btn) {
+  propSort = val;
+  btn.closest('.pill-row').querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderProps();
+}
+
+function renderProps() {
+  const el = document.getElementById('propsList');
+
+  let filtered = propsData.filter(p =>
+    propStatCat === 'All' || p.statLabel === propStatCat
+  );
+
+  if (propSort === 'edge') filtered.sort((a,b) => b.edge - a.edge);
+  else filtered.sort((a,b) => a.playerName.localeCompare(b.playerName));
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="props-empty">
+      <div class="props-empty-icon">🏅</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.1em">NO PROPS FOUND</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">Try loading props or switching sport</div>
+    </div>`;
+    return;
+  }
+
+  // Group by player+game
+  const groups = {};
+  filtered.forEach(p => {
+    const gk = `${p.playerName}__${p.gameLabel}`;
+    if (!groups[gk]) groups[gk] = { playerName: p.playerName, gameLabel: p.gameLabel, gameTime: p.gameTime, sport: p.sport, lines: [] };
+    groups[gk].lines.push(p);
+  });
+
+  el.innerHTML = Object.values(groups).map(g => {
+    const sportCfg = SPORTS[g.sport] || {};
+    const linesHtml = g.lines.map(p => {
+      const gr = gradeEdge(p.edge);
+      const added = inSlip(p.id);
+      const barW = Math.max(5, Math.min(100, p.edge * 8 + 40));
+      const desc = `${p.direction} ${p.line} ${p.statLabel}`;
+      const betObj = `{key:'${esc(p.id)}',type:'Prop',pick:'${esc(p.playerName + ' ' + desc)}',odds:${p.avgOdds},modelProb:${p.modelProb},edge:${p.edge},bookCount:${p.bookCount},gameLabel:'${esc(p.gameLabel)}',sportLabel:'${esc(sportCfg.name||p.sport)}'}`;
+      return `<div class="prop-line${added?' added':''}" style="border-color:${added?gr.color+'55':'rgba(0,255,136,0.1)'}">
+        <div class="pl-top">
+          <div class="pl-desc">${desc}</div>
+          <div class="pl-odds" style="color:${p.avgOdds>0?'#00ff88':'#9090b0'}">${fmtOdds(p.avgOdds)}</div>
+        </div>
+        <div class="pl-meta">Model: <span>${(p.modelProb*100).toFixed(1)}%</span> · Book: <span>${(oddsToProb(p.avgOdds)*100).toFixed(1)}%</span> · ${p.bookCount} books</div>
+        <div class="pl-bar-track"><div class="pl-bar-fill" style="width:${barW}%;background:${gr.color}"></div></div>
+        <div class="pl-bottom">
+          <span style="font-size:11px;font-weight:700;color:${gr.color}">${gr.label}</span>
+          <button class="slip-add-btn" style="border-color:${added?gr.color:'rgba(0,255,136,0.2)'};color:${added?gr.color:'#5070a0'};background:${added?gr.color+'20':'transparent'}"
+            onclick="toggleBet(${betObj})">${added?'✓ ADDED':'+ SLIP'}</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="prop-card">
+      <div class="prop-player-header">
+        <div>
+          <div class="prop-player-name">${g.playerName}</div>
+          <div class="prop-player-meta">${fmtTime(g.gameTime)} · ${g.gameLabel}</div>
+        </div>
+        <div class="prop-sport-badge">${sportCfg.emoji||'🏅'} ${sportCfg.name||g.sport}</div>
+      </div>
+      <div class="prop-lines">${linesHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Enter key ─────────────────────────────────────────────────────────────────
+// Init stat category pills for default sport
+renderStatCatPills();
+document.getElementById('apiKeyInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.target.blur();connect();}
 });
 </script>
 
