@@ -684,7 +684,11 @@ function renderTab(){
   if(tab==='value')renderV();
   if(tab==='props')renderPT();
   if(tab==='slip')renderS();
-  if(tab==='results')renderR();
+  if(tab==='results'){
+    renderR();
+    // Kick off auto-settle in background each time Results opens
+    if(apiKey)autoSettle().then(settled=>{if(settled)renderR();});
+  }
 }
 
 // ── SLIP ──────────────────────────────────────────────────────────────────────
@@ -895,6 +899,14 @@ function renderS(){
 function setRF(v,btn){rfilter=v;btn.closest('.rfrow').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));btn.classList.add('on');renderR();}
 function setRS(v,btn){rsport=v;btn.closest('.rfrow').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));btn.classList.add('on');renderR();}
 function setRP(v,btn){rperiod=v;btn.closest('.rfrow').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));btn.classList.add('on');renderR();}
+
+async function manualSettle(){
+  const btn=document.getElementById('settlBtn');
+  if(btn){btn.textContent='⟳ CHECKING...';btn.disabled=true;}
+  const settled=await autoSettle();
+  renderR();
+  if(btn){btn.textContent=settled?'🤖 SETTLED!':'🤖 SETTLE';btn.disabled=false;}
+}
 function setResult(id,r){const t=tracked.find(x=>x.id===id);if(t){t.result=r;saveT();updBadges();renderR();}}
 function clearAll(){if(!confirm('Clear all tracked results? This cannot be undone.'))return;tracked=[];saveT();updBadges();renderR();}
 
@@ -949,7 +961,10 @@ function renderR(){
 
   el.innerHTML=`
     <div class="fsec"><div class="flbl">TIME PERIOD</div>
-      <div class="rfrow">${['All','Today','Week','Month'].map(v=>`<button class="pill${rperiod===v?' on':''}" onclick="setRP('${v}',this)">${v}</button>`).join('')}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div class="rfrow" style="margin-bottom:0">${['All','Today','Week','Month'].map(v=>`<button class="pill${rperiod===v?' on':''}" onclick="setRP('${v}',this)">${v}</button>`).join('')}</div>
+        <button onclick="manualSettle()" id="settlBtn" style="padding:5px 12px;border-radius:8px;font-family:inherit;font-size:9px;letter-spacing:.1em;border:1px solid rgba(68,170,255,.3);background:transparent;color:#44aaff;cursor:pointer;flex-shrink:0;margin-left:8px">🤖 SETTLE</button>
+      </div>
     </div>
 
     <div class="rgrid2">
@@ -999,9 +1014,10 @@ function renderR(){
   }
   rl.innerHTML=filtered.map(t=>{
     const isW=t.result==='win',isL=t.result==='loss',isP=t.result==='push',isPend=t.result==='pending';
+    const autoBadge=t.auto?`<span style="font-size:8px;background:rgba(68,170,255,.15);color:#44aaff;padding:2px 6px;border-radius:4px;letter-spacing:.08em;margin-left:6px">🤖 AUTO</span>`:'';
     return`<div class="ritem">
       <div class="rit">
-        <div class="ripk">${t.pick}</div>
+        <div class="ripk">${t.pick}${autoBadge}</div>
         <div class="rioc ${isW?'oc-w':isL?'oc-l':'oc-p'}">${isW?'WIN':isL?'LOSS':isP?'PUSH':'PENDING'}</div>
       </div>
       <div class="rime">${t.se||''} ${t.sp} · ${t.type} · ${fo(t.odds)}</div>
@@ -1009,20 +1025,148 @@ function renderR(){
       <div class="ribot">
         <div><div class="rigr" style="color:${t.gc||'#5070a0'}">${t.gl||'—'}</div>
         <div class="ried">Edge ${t.edge>0?'+':''}${t.edge.toFixed(1)}% · Model ${(t.mp*100).toFixed(0)}%</div></div>
-        <div class="riact">
+        ${t.auto?`<span style="font-size:9px;color:#3a5070">auto-graded</span>`:
+        `<div class="riact">
           <button class="rob rw${isW?' sel':''}" onclick="setResult('${esc(t.id)}','win')">W</button>
           <button class="rob rl${isL?' sel':''}" onclick="setResult('${esc(t.id)}','loss')">L</button>
           <button class="rob rp${isP?' sel':''}" onclick="setResult('${esc(t.id)}','push')">P</button>
-        </div>
+        </div>`}
       </div>
     </div>`;
   }).join('');
+}
+
+// ── SCORES / AUTO-SETTLE ──────────────────────────────────────────────────────
+// Fetches completed scores for each sport that has pending bets and grades them.
+// The Odds API scores endpoint: /v4/sports/{sport}/scores?daysFrom=1&apiKey=...
+
+const SCORE_SPORTS=[
+  'basketball_nba','americanfootball_nfl','baseball_mlb','icehockey_nhl',
+  'basketball_ncaab','americanfootball_ncaaf','soccer_epl','soccer_usa_mls',
+  'mma_mixed_martial_arts',
+];
+
+async function fetchScores(sp){
+  // daysFrom=3 catches games from last 3 days
+  const url=`https://api.the-odds-api.com/v4/sports/${sp}/scores?daysFrom=3&apiKey=${apiKey}`;
+  try{
+    const r=await fetch(url);
+    if(!r.ok)return[];
+    const b=await r.json();
+    return Array.isArray(b)?b:[];
+  }catch{return[];}
+}
+
+function settleBet(t, scores){
+  // Find the matching completed game
+  const sc=scores.find(s=>{
+    // Match by team names appearing in the game label
+    const gl=(t.game||'').toLowerCase();
+    const hn=(s.home_team||'').toLowerCase();
+    const an=(s.away_team||'').toLowerCase();
+    return gl.includes(hn)||gl.includes(an);
+  });
+  if(!sc)return false;                        // game not found
+  if(!sc.completed)return false;             // game not finished yet
+  const scores2=sc.scores||[];
+  if(scores2.length<2)return false;
+
+  // Build score map {teamName: score}
+  const sm={};
+  scores2.forEach(s=>sm[s.name]=Number(s.score));
+  const homeScore=sm[sc.home_team];
+  const awayScore=sm[sc.away_team];
+  if(homeScore==null||awayScore==null)return false;
+
+  const pick=(t.pick||'').toLowerCase();
+  const homeTeam=(sc.home_team||'').toLowerCase();
+  const awayTeam=(sc.away_team||'').toLowerCase();
+  const type=t.type||'';
+
+  if(type==='Moneyline'){
+    const homeWon=homeScore>awayScore;
+    const awayWon=awayScore>homeScore;
+    const draw=homeScore===awayScore;
+    if(draw){t.result='push';t.auto=true;return true;}
+    if(pick.includes(homeTeam)){t.result=homeWon?'win':'loss';t.auto=true;return true;}
+    if(pick.includes(awayTeam)){t.result=awayWon?'win':'loss';t.auto=true;return true;}
+  }
+
+  if(type==='Spread'){
+    // pick format: "Team Name +X.5" or "Team Name -X.5"
+    const spreadMatch=t.pick.match(/([+-]?\d+\.?\d*)$/);
+    if(!spreadMatch)return false;
+    const spread=parseFloat(spreadMatch[1]);
+    // Determine which team is picked
+    if(pick.includes(homeTeam)){
+      const covered=homeScore+spread>awayScore;
+      const push=homeScore+spread===awayScore;
+      t.result=push?'push':covered?'win':'loss';t.auto=true;return true;
+    }
+    if(pick.includes(awayTeam)){
+      const covered=awayScore+spread>homeScore;
+      const push=awayScore+spread===homeScore;
+      t.result=push?'push':covered?'win':'loss';t.auto=true;return true;
+    }
+  }
+
+  if(type==='Total'){
+    const totalMatch=t.pick.match(/(\d+\.?\d*)$/);
+    if(!totalMatch)return false;
+    const line=parseFloat(totalMatch[1]);
+    const combined=homeScore+awayScore;
+    const isOver=pick.startsWith('over');
+    if(combined===line){t.result='push';t.auto=true;return true;}
+    t.result=(isOver?combined>line:combined<line)?'win':'loss';
+    t.auto=true;return true;
+  }
+
+  return false;
+}
+
+async function autoSettle(){
+  if(!apiKey)return;
+  // Find sports that have pending non-prop bets
+  const pendingSports=[...new Set(
+    tracked.filter(t=>t.result==='pending'&&t.type!=='Prop').map(t=>{
+      // Map display name back to API key
+      return Object.entries(SPORTS).find(([k,v])=>v.n===t.sp)?.[0];
+    }).filter(Boolean)
+  )];
+  if(!pendingSports.length)return;
+
+  let anySettled=false;
+  for(const sp of pendingSports){
+    const scores=await fetchScores(sp);
+    if(!scores.length)continue;
+    tracked.forEach(t=>{
+      if(t.result!=='pending'||t.type==='Prop')return;
+      const spKey=Object.entries(SPORTS).find(([k,v])=>v.n===t.sp)?.[0];
+      if(spKey!==sp)return;
+      if(settleBet(t,scores))anySettled=true;
+    });
+  }
+  if(anySettled){saveT();updBadges();}
+  return anySettled;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 renderSCpills();
 updBadges();
 document.getElementById('aki').addEventListener('keydown',e=>{if(e.key==='Enter'){e.target.blur();doConnect();}});
+
+// Auto-connect if key is saved
+(async()=>{
+  try{
+    const k=localStorage.getItem('se_k');
+    if(k&&k.trim()){
+      await loadSport(k,'basketball_nba',false);
+      // After connecting, try to settle any pending bets
+      await autoSettle();
+      if(tab==='results')renderR();
+    }
+  }catch(e){}
+})();
 </script>
 
 </body>
